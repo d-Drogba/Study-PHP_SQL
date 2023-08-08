@@ -16,20 +16,27 @@ while($row = mysqli_fetch_array($result)){
 }
 
 $article = array(
-    'title' => 'Welcome',
-    'description' => 'Hello, Web :)'
+    'title' => '반갑습니다. 해양도서관입니다.',
+    'description' => '많은 지식은 당신의 삶의 큰 도움이 됩니다.'
 );
 
 $update_link = '';
 $delete_link = '';
+$author = 'by 윤택한';
 if(isset($_GET['id'])) {
     $filtered_id = mysqli_real_escape_string($conn, $_GET['id']);
-    $sql = "SELECT *FROM topic WHERE id = {$filtered_id}";
+    $sql = "SELECT * FROM topic 
+            LEFT JOIN author
+            ON topic.author_id = author.id
+            WHERE topic.id = {$filtered_id}";
+    
     $result = mysqli_query($conn, $sql);
     $row = mysqli_fetch_array($result);
     $article['title'] = htmlspecialchars($row['title']);
     $article['description'] = 
     htmlspecialchars($row['description']);
+    $article['name'] = 
+    htmlspecialchars($row['name']);
 
     $update_link = '<a href="update.php?id='.$_GET['id'].'">update</a>';
     $delete_link = '
@@ -37,7 +44,8 @@ if(isset($_GET['id'])) {
             <input type="hidden" name="id" value="'.$_GET['id'].'">
             <input type="submit" value="delete">
         </form>
-    ';      
+    ';
+    $author = "<p>by {$article['name']}</p>";
 }
 ?>
 
@@ -46,17 +54,19 @@ if(isset($_GET['id'])) {
 
 <head>
     <meta charset="utf-8">
-    <title>WEB</title>
+    <title>PHP&SQL</title>
 </head>
 
 <body>
     <h1><a href="index.php">WEB</a></h1>
+    <a href="author.php">author</a>
     <ol><?=$list?></ol>
-    <a href="create.php">create</a>
+    <p><a href="create.php">create</a></p>
     <?=$update_link?>
     <?=$delete_link?>
     <h2><?=$article['title']?></h2>
     <?=$article['description']?>
+    <?=$author?>
 </body>
 
 </html>
