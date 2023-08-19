@@ -19,7 +19,7 @@ $conn = mysqli_connect(
     <p><a href="index.php">topic</a></p>
     <table border='1'>
         <tr>
-            <td>ID</td><td>NAME</td><td>PROFILE</td>
+            <td>ID</td><td>NAME</td><td>PROFILE</td><td></td>
             <?php
             $sql = "SELECT * FROM author";
             $result = mysqli_query($conn, $sql);
@@ -29,21 +29,52 @@ $conn = mysqli_connect(
                     'name'=>htmlspecialchars($row['name']),
                     'profile'=>htmlspecialchars($row['profile'])
                 );
-                ?>
+            ?>
                 <tr>
-                <td><?=$row['id']?></td>
-                <td><?=$row['name']?></td>
-                <td><?=$row['profile']?></td>
+                    <td><?=$row['id']?></td>
+                    <td><?=$row['name']?></td>
+                    <td><?=$row['profile']?></td>
+                    <td><a href="author.php?id=<?=$filtered['id']?>">update</a></td>
+                    <td>
+                        <form action="process_delete_author.php" method="POST"
+                            onsubmit="if(!confirm('sure?')){return false;}">
+                            <input type="hidden" name="id" value="<?=$filtered['id']?>">
+                            <input type="submit" value="delete">
+                        </form>
+                    </td>
                 </tr>
                 <?php
             }
             ?>
         </tr>
     </table>
-    <form action="process_create_author.php" method="post">
-            <p><input type="text" name="name" placeholder="author_name"></p>
-            <p><textarea name="profile" placeholder="author_profile"></textarea></p>
-            <p><input type="submit" value="Create author"></p>
+    <?php
+    $escaped = array(
+        'name'=>'',
+        'profile'=>''
+    );
+    $label_submit = 'Create author';
+    $form_action = 'process_create_author.php';
+    $form_id = '';
+
+    if(isset($_GET['id'])){
+        $filtered_id = mysqli_real_escape_string($conn, $_GET['id']);
+        settype($filtered_id, 'integer');
+        $sql = "SELECT * FROM author WHERE id = {$filtered_id}";
+        $result = mysqli_query($conn, $sql);
+        $row = mysqli_fetch_array($result);
+        $escaped['name'] = htmlspecialchars($row['name']);
+        $escaped['profile'] = htmlspecialchars($row['profile']);
+        $label_submit = 'Update author';
+        $form_action = 'process_update_author.php';
+        $form_id = '<input type="hidden" name="id" value="'.$_GET['id'].'">';
+    }
+    ?>
+    <form action="<?=$form_action?>" method="POST">
+        <?=$form_id?>
+        <p><input type="text" name="name" placeholder="name" value="<?=$escaped['name']?>"></p>
+        <p><textarea name="profile" placeholder="profile"><?=$escaped['profile']?></textarea></p>
+        <p><input type="submit" value="<?=$label_submit?>"></p>
     </form>
 </body>
 
